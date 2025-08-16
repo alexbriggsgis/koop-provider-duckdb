@@ -1,0 +1,30 @@
+{
+  "name": "koop-docker-example",
+  "description": "An example application using koop with docker",
+  "version": "1.0.0",
+  "author": "Kevin Pettijohn",
+  "dependencies": {
+    "@koopjs/provider-file-geojson": "^2.2.0",
+    "config": "^3.2.5",
+    "@koopjs/koop-core": "^10.4.17"
+  },
+  "keywords": [
+    "docker",
+    "example",
+    "koop"
+  ],
+  "license": "Apache-2.0",
+  "main": "src/index.js",
+  "private": true,
+  "scripts": {
+    "start": "node src/index.js",
+    "start:dev": "koop serve --watch --debug",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "@koopjs/cli": "^0.6.0"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

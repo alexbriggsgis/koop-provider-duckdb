@@ -1,0 +1,43 @@
+{
+  "name": "koop-provider-duckdb",
+  "version": "0.0.1",
+  "description": "A duckdb provider for koop",
+  "main": "src/index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "start": "koop serve",
+    "test": "standard && tape test/*.js | tap-spec"
+  },
+  "dependencies": {
+    "config": "^3.2.5",
+    "koop": "^3.17.0",
+    "request": "^2.88.0",
+    "@koopjs/geoservice-utils": "^2.2.2",
+    "@duckdb/node-api" : "1.3.2-alpha.25",
+    "@synatic/noql": "^2.1.17"
+  },
+  "author": "Alex Briggs",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@koopjs/cli": "^0.6.0",
+    "nock": "^12.0.0",
+    "standard": "^14.3.1",
+    "tap-spec": "^5.0.0",
+    "tape": "^5.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alexbriggsgis/koop-provider-duckdb.git"
+  },
+  "bugs": {
+    "url": "https://github.com/alexbriggsgis/koop-provider-duckdb/issues"
+  },
+  "homepage": "https://github.com/alexbriggsgis/koop-provider-duckdb",
+  "keywords": [
+    "koop",
+    "provider",
+    "duckdb"
+  ]
+}

@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+
+  koop-duckdb:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "9001:9001"
+

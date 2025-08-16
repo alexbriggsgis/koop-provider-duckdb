@@ -1,0 +1,46 @@
+{
+  "server": {
+    "port": 9000
+  },
+  "mongodb": {
+    "connectString": "mongodb://mongodb:27017/koop",
+    "definedCollectionsOnly": true,
+    "databases": {
+      "sample-data": {
+        "fires": {
+          "geometryField": "location",
+          "idField": "_id",
+          "cacheTtl": 0,
+          "crs": 4326,
+          "maxRecordCount": 2000
+        }
+      }
+    }
+  },
+  "duckdb": {
+    "parquetFile": "data/AU.parquet",
+    "queryTimeout": 30000,
+    "geometryField": "geometry",
+    "idField": "id",
+    "parquetFields": [
+      {
+        "name": "id",
+        "type": "String",
+        "alias": "id"
+      },
+      {
+        "name": "confidence",
+        "type": "Double",
+        "alias": "confidence"
+      },
+      {
+        "name": "socials",
+        "type": "String",
+        "alias": "socials"
+      }
+    ],
+    "cacheTtl": 0,
+    "crs": 4326,
+    "maxRecordCount": 2000
+  }
+}
