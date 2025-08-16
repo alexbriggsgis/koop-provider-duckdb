@@ -3,29 +3,36 @@
     "port": 9000
   },
   "duckdb": {
-    "parquetFile": "data/AU.parquet",
+    "parquetFile": "data/sydney_buildings.parquet",
     "queryTimeout": 30000,
     "geometryField": "geometry",
     "idField": "id",
-    "parquetFields": [
+    "fields": [
       {
         "name": "id",
         "type": "String",
         "alias": "id"
       },
       {
-        "name": "confidence",
-        "type": "Double",
-        "alias": "confidence"
+        "name": "subtype",
+        "type": "String",
+        "alias": "subtype"
       },
       {
-        "name": "socials",
+        "name": "sources",
         "type": "String",
-        "alias": "socials"
+        "alias": "sources"
+      },
+      {
+        "name": "names",
+        "type": "String",
+        "alias": "names"
       }
     ],
     "cacheTtl": 0,
     "crs": 4326,
-    "maxRecordCount": 2000
+    "maxRecordCount": 2000,
+    "exceededTransferLimit": true,
+    "supportsPagination": true
   }
 }

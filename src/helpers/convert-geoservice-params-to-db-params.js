@@ -14,28 +14,6 @@ const relationLookup = {
 
 function convertGeoserviceParamsToDbParams(params) {
   const {
-    geometry,
-    returnExtentOnly,
-    geometryField,
-    idField,
-    inSR,
-    spatialRel,
-    crs,
-    parquetFile,
-    outFields
-  } = params;
-
-  // Convert geoservice where, objectIds, resultRecordCount, result offset to SQL equivalent
-  const sql = buildSqlQuery(params);
-
-
-  return {
-    sql
-  };
-}
-
-function buildSqlQuery(params) {
-  const {
     where,
     orderByFields,
     objectIds,
@@ -65,13 +43,13 @@ function buildSqlQuery(params) {
     geometryFilterduckdb =  `ST_Intersects(geometry, ST_GeomFromGeoJSON('${JSON.stringify(geometryFilter.geometry)}'))`
   }
 
-  const geojsonProperties = outFields.map(key => `'${key}',${key}`).join(',');
+  const safeOutFields = Array.isArray(outFields) ? outFields : [];
+  const geojsonProperties = safeOutFields.map(key => `'${key}',${key}`).join(',');
+
 
   const limitClause = ` LIMIT ${resultRecordCount}`;
 
   const orderByClause = orderByFields ? ` ORDER BY ${orderByFields}` : '';
-
-  const objectIDClause = resultOffset ? `${resultOffset} + ROW_NUMBER() OVER () as OBJECTID`  : `ROW_NUMBER() OVER () as OBJECTID`;
 
   const offsetClause = resultOffset ? ` OFFSET ${resultOffset}` : '';
 
@@ -89,11 +67,9 @@ function buildSqlQuery(params) {
   }
   const finalWhereClause = whereClausewithgeom ? whereClausewithgeom : whereClause;
 
-  if (returnCountOnly || returnExtentOnly) {
-    return `SELECT COUNT(*) AS count FROM read_parquet('${parquetFile}', filename=true, hive_partitioning=1) AS data ${finalWhereClause}`;
-  }
+  const countSql = `SELECT COUNT(*) FROM read_parquet('${parquetFile}', filename=true, hive_partitioning=1) AS data ${finalWhereClause} ${offsetClause}`;
 
-  return `WITH geodata AS (SELECT ${outFields},${geometryField}, ${objectIDClause} FROM read_parquet('${parquetFile}', filename=true, hive_partitioning=1) AS data ${finalWhereClause} ${orderByClause} ${limitClause} ${offsetClause})
+  const sql = `WITH geodata AS (SELECT ${outFields},${geometryField} FROM read_parquet('${parquetFile}', filename=true, hive_partitioning=1) AS data ${finalWhereClause} ${orderByClause} ${limitClause} ${offsetClause})
   SELECT json_object(
     'type', 'FeatureCollection',
     'features', array_agg(
@@ -101,14 +77,17 @@ function buildSqlQuery(params) {
         'type', 'Feature',
         'geometry', ST_AsGeoJSON(geometry)::JSON,
         'properties', json_object(
-          'OBJECTID', OBJECTID,
           ${geojsonProperties}
         )
       )
     )
   ) AS geojson_featurecollection
   FROM geodata;`;
+  return {
+    sql, countSql
+  };
 }
+
 
 module.exports = {
   convertGeoserviceParamsToDbParams,

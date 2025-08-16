@@ -70,7 +70,7 @@ Model.prototype.getData = async function (req, callback) {
   // Fetch metadata
   const {
     parquetFile,
-    parquetFields,
+    fields,
     idField,
     geometryField = "geometry",
     cacheTtl = 0,
@@ -79,16 +79,14 @@ Model.prototype.getData = async function (req, callback) {
 
   } = this.getMetadata();
 
+  if (!fields || !Array.isArray(fields)) {
+    return callback(new Error('Invalid or missing parquetFields in metadata'), null);
+  }
 
-  const parquetFieldNames = parquetFields.map(field => field.name);
+  const parquetFieldNames = fields.map(field => field.name);
 
   const sql_fields = getOutFields(parquetFieldNames, geoserviceParams.outFields || '*');
 
-  const metadataFields = [...(parquetFields || []), {
-    name: "OBJECTID",
-    type: "Integer",
-    alias: "OBJECTID"
-  }];
 
   // Convert Geoservice params to MongoDB query equivalents
   const dbParams = convertGeoserviceParamsToDbParams({
@@ -100,23 +98,31 @@ Model.prototype.getData = async function (req, callback) {
     outFields: sql_fields
   });
 
-  const query = dbParams.sql;
-
   try {
     if (!duckdbConnection) {
       throw new Error('DuckDB connection not initialized');
     }
-    const reader = await duckdbConnection.runAndReadAll(query);
-    const rawData = reader.getRows()[0][0];
+
 
     // for aggregate requests, aggregate directly with MongoDB
     if (geoserviceParams.returnCountOnly) {
-      return callback(null, { "count": Number(rawData) });
+      const countreader = await duckdbConnection.runAndReadAll(dbParams.countSql);
+      const countrawData = countreader.getRows()[0][0];
+      return callback(null, { "count": Number(countrawData) });
     }
 
+    const geojsonreader = await duckdbConnection.runAndReadAll(dbParams.sql);
+    const geojsonrawData = geojsonreader.getRows()[0][0];
+
     // Parse the result if it's a string, or use as-is if it's already an object
-    const geojson = typeof rawData === 'string' ? JSON.parse(rawData) : rawData;
+    const geojson = typeof geojsonrawData === 'string' ? JSON.parse(geojsonrawData) : geojsonrawData;
     // Add metadata at the top level of the object
+
+    //catch empty features response 
+    if (!Array.isArray(geojson.features)) {
+      geojson.features = [];
+    }
+
 
     const result = {
       ...geojson,
@@ -124,7 +130,11 @@ Model.prototype.getData = async function (req, callback) {
         name: 'duckdb',
         description: 'DuckDB Provider',
         idField: idField,
-        fields: metadataFields,
+        fields: fields,
+        maxRecordCount: maxRecordCount,
+        returnExceededLimitFeatures: true,
+        supportsPagination: true
+
       }
     };
 
@@ -137,42 +147,3 @@ Model.prototype.getData = async function (req, callback) {
 }
 
 module.exports = Model
-
-/* Example provider API:
-   - needs to be converted to GeoJSON Feature Collection
-{
-  "resultSet": {
-  "queryTime": 1488465776220,
-  "vehicle": [
-    {
-      "tripID": "7144393",
-      "signMessage": "Red Line to Beaverton",
-      "expires": 1488466246000,
-      "serviceDate": 1488441600000,
-      "time": 1488465767051,
-      "latitude": 45.5873117,
-      "longitude": -122.5927705,
-    }
-  ]
-}
-
-Converted to GeoJSON:
-
-{
-  "type": "FeatureCollection",
-  "features": [
-    "type": "Feature",
-    "properties": {
-      "tripID": "7144393",
-      "signMessage": "Red Line to Beaverton",
-      "expires": "2017-03-02T14:50:46.000Z",
-      "serviceDate": "2017-03-02T08:00:00.000Z",
-      "time": "2017-03-02T14:42:47.051Z",
-    },
-    "geometry": {
-      "type": "Point",
-      "coordinates": [-122.5927705, 45.5873117]
-    }
-  ]
-}
-*/
