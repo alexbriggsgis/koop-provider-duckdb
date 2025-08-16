@@ -65,7 +65,7 @@ function buildSqlQuery(params) {
     geometryFilterduckdb =  `ST_Intersects(geometry, ST_GeomFromGeoJSON('${JSON.stringify(geometryFilter.geometry)}'))`
   }
 
-  
+  const geojsonProperties = outFields.map(key => `'${key}',${key}`).join(',');
 
   const limitClause = ` LIMIT ${resultRecordCount}`;
 
@@ -102,9 +102,7 @@ function buildSqlQuery(params) {
         'geometry', ST_AsGeoJSON(geometry)::JSON,
         'properties', json_object(
           'OBJECTID', OBJECTID,
-          'id', id,
-          'confidence', confidence,
-          'socials', socials
+          ${geojsonProperties}
         )
       )
     )
