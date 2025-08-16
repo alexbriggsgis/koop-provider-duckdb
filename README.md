@@ -12,9 +12,13 @@ e.g. all places in australia
   --type=place \
   -o australia_places.parquet
 ```
-2. Run `docker compose build`
-3. Run `docker compose up`
-4. Test out the app on `http://localhost:9001/`
+2. Update `docker-demos/config/deault.json` with your parquet details
+3. Run `docker compose build`
+4. Run `docker compose up`
+5. Test out the app on `http://localhost:9001/`
+
+![Gif of Demo](/docs/assets/demo.gif)
+
 
 ## Koop provider file structure
 
