@@ -6,7 +6,8 @@ Experimental koop provider for DuckDB, specifically for reading parquet data sou
 
 1. Download a parquet file and place parquet file in docker-demo/data. Consider using https://docs.overturemaps.org/getting-data/overturemaps-py/
 e.g. all places in australia 
-```overturemaps download \
+```
+  overturemaps download \
   --bbox=112.9211,-43.7405,153.6383,-10.6840 \
   -f geoparquet \
   --type=place \
